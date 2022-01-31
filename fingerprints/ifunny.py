@@ -58,13 +58,11 @@ def fingerprintData(responseData: str, datastoreModules: list):
         for fingerprint in FINGERPRINTS:
             matchCounts[fingerprint] = 0
             for field in FINGERPRINTS[fingerprint]:
-                print(field)
                 if field in object:
                     matchCounts[fingerprint] += 1
         match = max(matchCounts, key=matchCounts.get)
         if matchCounts[match] >= MINIMUM_MATCHES:
             matches[match].append(uniqueKeys)
-    print(matches)
     for datastoreModule in datastoreModules:
         datastoreModule['handleData'](matches)
 
