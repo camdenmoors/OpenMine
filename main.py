@@ -1,14 +1,17 @@
-from fingerprinting import fingerprintData
+from utilities import loadDatastoreModules, loadFingerprintModules
 from graphql_client import GraphQLClient
-import requests
+import datastores
+import fingerprints
+import threading
 import json
 import base64
 import brotli
-import uuid
 import zlib
 
-SOLR_HOST = "YOUR_SOLR_IP"
-TARGET_HOSTNAME = "YOUR_TARGET_HOSTNAME"
+datastoreHost = '192.168.1.19'
+
+targetHostnames, fingerprintModules = loadFingerprintModules(fingerprints)
+datastoreModules = loadDatastoreModules(datastores, datastoreHost)
 
 ws = GraphQLClient('ws://127.0.0.1:45456/server/8000/subscription')
 requestCache = {}
@@ -41,11 +44,13 @@ def callback(_id, data):
   elif ("responseCompleted" in data['payload']['data']):
     try:
       responseData = data['payload']['data']['responseCompleted']
-      responseData['headers'] = json.loads(responseData['headers'])
       requestId = responseData['id']
+      responseData['headers'] = json.loads(responseData['headers'])
       responseData['request'] = requestCache[requestId]
+      hostname = responseData['request']['headers']['host']
       responseBody = responseData['body']
       del responseData['body']
+      # Decode body
       try:
         responseBody = brotli.decompress(base64.b64decode(responseBody))
       except:
@@ -53,45 +58,12 @@ def callback(_id, data):
           responseBody = zlib.decompress(base64.b64decode(responseBody), 16+zlib.MAX_WBITS)
         except:
           responseBody = base64.b64decode(responseBody)
-      if(responseData['request']['headers']['host'] == TARGET_HOSTNAME):
-        try:
-          userPayloads = []
-          commentPayloads = []
-          postPayloads = []
-          for foundItem in extractIDItems(json.loads(responseBody)):
-            try:
-              fingerprint = fingerprintData(foundItem)
-              if fingerprint:
-                if(fingerprint == 'comment'):
-                  commentPayloads.append(foundItem)
-                elif(fingerprint == 'user'):
-                  userPayloads.append(foundItem)
-                elif(fingerprint == 'post'):
-                  postPayloads.append(foundItem)
-            except Exception as e:
-              print(e)
-          if userPayloads:
-            response = requests.post(f"http://{SOLR_HOST}:8983/solr/users/update?commitWithin=1000&overwrite=true&wt=json", data=json.dumps(userPayloads), headers={'Content-Type': 'application/json'})
-            if(response.status_code == 200):
-              print(f"Added {str(len(userPayloads))} users")
-            else:
-              print(response.text)
-          if commentPayloads:
-            response = requests.post(f"http://{SOLR_HOST}:8983/solr/comments/update?commitWithin=1000&overwrite=true&wt=json", data=json.dumps(commentPayloads), headers={'Content-Type': 'application/json'})
-            if(response.status_code == 200):
-              print(f"Added {str(len(commentPayloads))} comments")
-            else:
-              print(response.text)
-          if postPayloads:
-            response = requests.post(f"http://{SOLR_HOST}:8983/solr/posts/update?commitWithin=1000&overwrite=true&wt=json", data=json.dumps(postPayloads), headers={'Content-Type': 'application/json'})
-            if(response.status_code == 200):
-              print(f"Added {str(len(postPayloads))} posts")
-            else:
-              print(response.text)
-        except Exception as e:
-          print(e)
-    except:
-      pass
+      # If the hostname is in one of our moudles:
+      if hostname in targetHostnames:
+        extractedItems = extractIDItems(json.loads(responseBody))
+        threading.Thread(target=fingerprintModules[hostname]['method'], args=([extractedItems], datastoreModules)).start()
+    except Exception as e:
+      print(e)
 
 subscriptions = ["subscription OnRequest { requestReceived { id, matchedRuleId protocol, method, url, path, remoteIpAddress, hostname, headers, body, timingEvents httpVersion tags } }", "subscription OnResponse { responseCompleted { id, statusCode, statusMessage, headers, body, timingEvents tags } }"]
 
