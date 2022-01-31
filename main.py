@@ -8,10 +8,8 @@ import base64
 import brotli
 import zlib
 
-datastoreHost = '192.168.1.19'
-
 targetHostnames, fingerprintModules = loadFingerprintModules(fingerprints)
-datastoreModules = loadDatastoreModules(datastores, datastoreHost)
+datastoreModules = loadDatastoreModules(datastores)
 
 ws = GraphQLClient('ws://127.0.0.1:45456/server/8000/subscription')
 requestCache = {}
@@ -22,10 +20,7 @@ def extractIDItems(data):
       if isinstance(json_input, dict):
           for k, v in json_input.items():
               if k == lookup_key:
-                uniqueKeys = {k: v for k, v in json_input.items() if type(v) is not dict}
-                if 'user' in json_input and 'id' in json_input['user']:
-                  uniqueKeys['user_id'] = json_input['user']['id']
-                extractedItems.append(uniqueKeys)
+                extractedItems.append(json_input)
               else:
                   item_generator(v, lookup_key)
       elif isinstance(json_input, list):
@@ -61,7 +56,7 @@ def callback(_id, data):
       # If the hostname is in one of our moudles:
       if hostname in targetHostnames:
         extractedItems = extractIDItems(json.loads(responseBody))
-        threading.Thread(target=fingerprintModules[hostname]['method'], args=([extractedItems], datastoreModules)).start()
+        threading.Thread(target=fingerprintModules[hostname]['method'], args=(extractedItems, datastoreModules)).start()
     except Exception as e:
       print(e)
 

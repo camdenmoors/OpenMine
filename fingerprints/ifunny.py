@@ -8,15 +8,31 @@ FINGERPRINTS = {
     'ifunny-posts': ['id', 'type', 'url', 'share_url', 'date_creation']
 }
 
-
 def fingerprintData(extractedData: list, datastoreModules: list):
-    print(extractedData)
     matches = {}
     # Fill matches with empty arrays based off of fingerprints
     for fingerprint in FINGERPRINTS:
         matches[fingerprint] = []
     # Match data from fingerprints
     for object in extractedData:
+        uniqueKeys = {k: v for k, v in object.items() if type(v) is not dict}
+        if 'user' in object and 'id' in object['user']:
+            uniqueKeys['user_id'] = object['user']['id']
+        if 'num' in object:
+            if 'subscriptions' in object['num']:
+                uniqueKeys['numSubscriptions'] = object['num']['subscriptions']
+            if 'subscribers' in object['num']:
+                uniqueKeys['numSubscribers'] = object['num']['subscribers']
+            if 'smiles' in object['num']:
+                uniqueKeys['numSmiles'] = object['num']['smiles']
+            if 'unsmiles' in object['num']:
+                uniqueKeys['numUnsmiles'] = object['num']['unsmiles']
+            if 'comments' in object['num']:
+                uniqueKeys['numComments'] = object['num']['comments']
+            if 'views' in object['num']:
+                uniqueKeys['numViews'] = object['num']['views']
+            if 'republished' in object['num']:
+                uniqueKeys['numRepublish'] = object['num']['republished']
         matchCounts = {}
         for fingerprint in FINGERPRINTS:
             matchCounts[fingerprint] = 0
@@ -25,10 +41,9 @@ def fingerprintData(extractedData: list, datastoreModules: list):
                     matchCounts[fingerprint] += 1
         match = max(matchCounts, key=matchCounts.get)
         if matchCounts[match] >= MINIMUM_MATCHES:
-            matches[match].append(object)
+            matches[match].append(uniqueKeys)
     for datastoreModule in datastoreModules:
         datastoreModule['handleData'](matches)
-
 
 def getModule():
     return {
