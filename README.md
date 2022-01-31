@@ -10,7 +10,7 @@ This tool depends on [HTTP Toolkit](https://httptoolkit.tech/) to setup the HTTP
 To get started:
  - Install and run [HTTP Toolkit](https://httptoolkit.tech/)
  - Point a device with the HTTP toolkit certificate installed towards the interception server
- - Edit `fingerprinting.py`:
+ - Edit `fingerprints/` modules:
    - Update the `fingerprints` dictionary, where keys are the types of data, and the values are the keys the program should look for
    - Update `MINIMUM_FINGERPRINTS` if needed, this is the minimum number of keys found to mark the input data as a hit
  - Edit `main.py`:
