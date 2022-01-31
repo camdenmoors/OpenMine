@@ -1,5 +1,4 @@
 import json
-import pydash
 from uuid import uuid4
 
 HOSTNAME = "gql.reddit.com"
