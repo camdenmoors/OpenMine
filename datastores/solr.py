@@ -1,6 +1,11 @@
 import requests
 import json
 
+solrConfig = {
+    "hostname": "",
+    "port": ""
+}
+
 # Data comes in this format:
 # {
 #   "table-name": [
@@ -11,12 +16,7 @@ import json
 #       }
 #   ]
 # }
-# Were table names are defined by the fingerprint files
-
-solrConfig = {
-    "hostname": "",
-    "port": ""
-}
+# Where table names are defined by the fingerprint files
 
 def uploadData(data: dict):
     for core in data:
