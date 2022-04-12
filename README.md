@@ -1,6 +1,10 @@
 # OpenMine
 A framework for passive and active data collection.
 
+## Chart:
+![OpenMine](https://user-images.githubusercontent.com/66680985/162869975-5be6be3b-43d8-48c8-ac81-ef30a9dea091.jpg)
+
+
 ## Setup:
 The included script is built for my use (collecting data from specific apps, and posting to Apache Solr), however, it can be edited to add your own fingerprints and data stores.
 
