@@ -3,7 +3,7 @@ A framework for passive and active data collection.
 ![OpenMine](https://user-images.githubusercontent.com/66680985/162869975-5be6be3b-43d8-48c8-ac81-ef30a9dea091.jpg)
 
 ## Implementation:
-Passive Prodcers:
+Passive Producers:
  - [x] HTTP Interception & Fingerprinting
    - [ ] Interaction Generators
  - [x] WebSocket Collection
