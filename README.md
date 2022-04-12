@@ -1,12 +1,31 @@
 # OpenMine
 A framework for passive and active data collection.
-
-## Chart:
 ![OpenMine](https://user-images.githubusercontent.com/66680985/162869975-5be6be3b-43d8-48c8-ac81-ef30a9dea091.jpg)
 
+## Implementation:
+Passive Prodcers:
+ - [x] HTTP Interception & Fingerprinting
+   - [ ] Interaction Generators
+ - [x] WebSocket Collection
+
+Active Producers:
+ - [x] Active API Scraping Modules (AKA Data Expansion)
+ - [ ] Web Scraping
+ - [ ] ZMap (or similar)
+ - [ ] ZGrab (or similar)
+
+Consumers:
+ - [x] Solr Integration
+   - [x] Document Linking
+ - [ ] BigQuery Integration
+   - [ ] Document Linking (Not sure if possible, ~5s/query minimum. Maybe with non-free allocated capacity)
+ - [ ] Cassandra Integration
+   - [ ] Document Linking
+ - [ ] Data Transformation (Common event structure)
+ - [ ] AI Analysis 
 
 ## Setup:
-The included script is built for my use (collecting data from specific apps, and posting to Apache Solr), however, it can be edited to add your own fingerprints and data stores.
+This project is still a work in progress and does not have a simple setup procedure.
 
 ### Passive HTTP Collection
 This tool depends on [HTTP Toolkit](https://httptoolkit.tech/) to setup the HTTP(S) interception, which it hooks into the GraphQL over Websocket interface it exposes.
