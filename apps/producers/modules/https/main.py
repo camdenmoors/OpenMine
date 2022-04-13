@@ -1,6 +1,6 @@
 from utilities import loadDatastoreModules, loadFingerprintModules
 from graphql_client import GraphQLClient
-import datastores
+import ..datastores
 import fingerprints
 import threading
 import json

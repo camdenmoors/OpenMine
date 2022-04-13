@@ -1,4 +1,8 @@
 {
+    "amqp": {
+        "host": "localhost",
+        "queue": "main_queue"
+    },
     "enabledDatastores": {
         "solr": {
             "hostname": "192.168.1.19",

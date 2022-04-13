@@ -1,0 +1,62 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "producer": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      },
+      "ip": {
+        "type": "string"
+      },
+      "hostname": {
+        "type": "string"
+      },
+      "path": {
+        "type": "string"
+      },
+      "content": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "originating_id": {
+        "type": "string"
+      },
+      "relationships": {
+        "type": "array",
+        "items": [
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "tags": {
+        "type": "array",
+        "items": [
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "_raw": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "producer",
+      "type",
+      "ip",
+      "hostname",
+      "path",
+      "content",
+      "username",
+      "originating_id",
+      "relationships",
+      "tags",
+      "_raw"
+    ]
+  }

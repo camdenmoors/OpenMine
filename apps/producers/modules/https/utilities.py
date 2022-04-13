@@ -2,7 +2,7 @@ import traceback
 import json
 
 config = {}
-with open('config.json', 'r') as configFile:
+with open('../../../config.json', 'r') as configFile:
     config = json.load(configFile)
 
 def loadFingerprintModules(module):
