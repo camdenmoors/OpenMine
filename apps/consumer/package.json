@@ -10,7 +10,9 @@
   "license": "ISC",
   "dependencies": {
     "@types/amqplib": "^0.8.2",
-    "amqplib": "^0.8.0"
+    "@types/lodash": "^4.14.181",
+    "amqplib": "^0.8.0",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@types/node": "^17.0.23"

@@ -1,5 +1,5 @@
 import json
-
+from event import Event
 
 HOSTNAME = "api.ifunny.mobi"
 MINIMUM_MATCHES = 3
@@ -11,6 +11,7 @@ FINGERPRINTS = {
     'ifunny-posts': ['id', 'type', 'url', 'share_url', 'date_creation']
 }
 
+# Extract objects where 'id' is present
 def preprocessData(data: dict):
     extractedItems = []
 
@@ -28,7 +29,7 @@ def preprocessData(data: dict):
     return extractedItems
     
 
-def fingerprintData(responseData: str, datastoreModules: list):
+def fingerprintData(responseData: str):
     extractedData = preprocessData(json.loads(responseData))
     matches = {}
     # Fill matches with empty arrays based off of fingerprints
@@ -36,24 +37,27 @@ def fingerprintData(responseData: str, datastoreModules: list):
         matches[fingerprint] = []
     # Match data from fingerprints
     for object in extractedData:
+        event = Event(raw=json.dumps(object), producer="https")
         uniqueKeys = {k: v for k, v in object.items() if type(v) is not dict}
         if 'user' in object and 'id' in object['user']:
             uniqueKeys['user_id'] = object['user']['id']
+            uniqueKeys['username'] = object['user']['nick']
         if 'num' in object:
             if 'subscriptions' in object['num']:
                 uniqueKeys['numSubscriptions'] = object['num']['subscriptions']
             if 'subscribers' in object['num']:
-                uniqueKeys['numSubscribers'] = object['num']['subscribers']
+                uniqueKeys['statistics.followers'] = object['num']['subscribers']
             if 'smiles' in object['num']:
-                uniqueKeys['numSmiles'] = object['num']['smiles']
+                uniqueKeys['statistics.positive'] = object['num']['smiles']
             if 'unsmiles' in object['num']:
-                uniqueKeys['numUnsmiles'] = object['num']['unsmiles']
+                uniqueKeys['statistics.negative'] = object['num']['unsmiles']
             if 'comments' in object['num']:
-                uniqueKeys['numComments'] = object['num']['comments']
+                uniqueKeys['statistics.interactions'] = object['num']['comments']
             if 'views' in object['num']:
-                uniqueKeys['numViews'] = object['num']['views']
+                uniqueKeys['statistics.views'] = object['num']['views']
             if 'republished' in object['num']:
-                uniqueKeys['numRepublish'] = object['num']['republished']
+                uniqueKeys['statistics.republish'] = object['num']['republished']
+
         matchCounts = {}
         for fingerprint in FINGERPRINTS:
             matchCounts[fingerprint] = 0
@@ -63,8 +67,8 @@ def fingerprintData(responseData: str, datastoreModules: list):
         match = max(matchCounts, key=matchCounts.get)
         if matchCounts[match] >= MINIMUM_MATCHES:
             matches[match].append(uniqueKeys)
-    for datastoreModule in datastoreModules:
-        datastoreModule['handleData'](matches)
+    
+    return matches
 
 def getModule():
     return {

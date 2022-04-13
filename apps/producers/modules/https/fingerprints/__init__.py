@@ -5,5 +5,6 @@ from importlib import import_module
 globals()['modules'] = {}
 
 package_dir = Path(__file__).resolve()
-for (_, module_name, _) in iter_modules(['./fingerprints']):
+for (_, module_name, _) in iter_modules(['./modules/https/fingerprints']):
+    print(module_name)
     globals()['modules'][module_name] = getattr(import_module(f"{__name__}.{module_name}"), 'getModule')
