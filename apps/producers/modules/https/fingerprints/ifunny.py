@@ -1,4 +1,5 @@
 import json
+from uuid import uuid4
 from event import Event
 
 HOSTNAME = "api.ifunny.mobi"
@@ -29,34 +30,40 @@ def preprocessData(data: dict):
     return extractedItems
     
 
-def fingerprintData(responseData: str):
-    extractedData = preprocessData(json.loads(responseData))
+def fingerprintData(responseData, responseBody):
+    print(responseBody)
+    extractedData = preprocessData(json.loads(responseBody))
     matches = {}
     # Fill matches with empty arrays based off of fingerprints
     for fingerprint in FINGERPRINTS:
         matches[fingerprint] = []
     # Match data from fingerprints
     for object in extractedData:
-        event = Event(raw=json.dumps(object), producer="https")
-        uniqueKeys = {k: v for k, v in object.items() if type(v) is not dict}
+        event = Event(raw=json.dumps(object), producer="https", hostname=HOSTNAME, path=responseData['request']['path'])
         if 'user' in object and 'id' in object['user']:
-            uniqueKeys['user_id'] = object['user']['id']
-            uniqueKeys['username'] = object['user']['nick']
+            event.user_id = object['user']['id']
+            event.username = object['user']['nick']
+        if 'nick' in object:
+            event.user_id = object['id']
+            event.username = object['nick']
+        if 'text' in object:
+            event.content = object['text']
+        print(object)
+        if 'tags' in object:
+            event.tags = object['tags']
         if 'num' in object:
-            if 'subscriptions' in object['num']:
-                uniqueKeys['numSubscriptions'] = object['num']['subscriptions']
             if 'subscribers' in object['num']:
-                uniqueKeys['statistics.followers'] = object['num']['subscribers']
+                event.statistics_followers = object['num']['subscribers']
             if 'smiles' in object['num']:
-                uniqueKeys['statistics.positive'] = object['num']['smiles']
+                event.statistics_positive = object['num']['smiles']
             if 'unsmiles' in object['num']:
-                uniqueKeys['statistics.negative'] = object['num']['unsmiles']
+                event.statistics_negative = object['num']['unsmiles']
             if 'comments' in object['num']:
-                uniqueKeys['statistics.interactions'] = object['num']['comments']
+                event.statistics_interactions = object['num']['comments']
             if 'views' in object['num']:
-                uniqueKeys['statistics.views'] = object['num']['views']
+                event.statistics_views = object['num']['views']
             if 'republished' in object['num']:
-                uniqueKeys['statistics.republish'] = object['num']['republished']
+                event.statistics_republish = object['num']['republished']
 
         matchCounts = {}
         for fingerprint in FINGERPRINTS:
@@ -66,8 +73,7 @@ def fingerprintData(responseData: str):
                     matchCounts[fingerprint] += 1
         match = max(matchCounts, key=matchCounts.get)
         if matchCounts[match] >= MINIMUM_MATCHES:
-            matches[match].append(uniqueKeys)
-    
+            matches[match].append(event)
     return matches
 
 def getModule():

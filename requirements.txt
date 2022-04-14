@@ -1,3 +1,4 @@
 py-graphql-client
 brotli
 pydash
+pika

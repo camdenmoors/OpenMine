@@ -66,12 +66,13 @@ class HTTPSInterceptionModule(BaseProducerClass):
                         responseBody = base64.b64decode(responseBody)
                 # If the hostname is in one of our moudles:
                 if hostname in self.targetHostnames and 'repeat=false' not in requestURL:
-                    matches = self.fingerprints[hostname]['method'](responseBody)
+                    matches = self.fingerprints[hostname]['method'](responseData, responseBody)
                     for matchType in matches:
                         self.log(f"Got {len(matches[matchType])} matches for {matchType}")
-                        for match in matches[matchType]:
-                            self.sendMessage(match)
-                    
+                        for event in matches[matchType]:
+                            print(f"Sending event")
+                            self.sendEvent(event)
+                        
             except Exception as e:
                 print(e)
 

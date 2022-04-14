@@ -1,40 +1,39 @@
-import {Event} from "./types/Event";
-import config from '../../config.json'
-import amqp, {Message} from 'amqplib/callback_api'
+#!/usr/bin/env node
+
+import amqp from 'amqplib/callback_api'
 import _ from 'lodash'
 
-function processEvent(message: Message) {
+function handleMessage(message: amqp.Message) {
     if (message.content) {
         try {
-            const data: Event = JSON.parse(message.content.toString());
-            console.log(_.omit(data))
+            const messageJson = JSON.parse(message.content.toString())
+            console.log(_.omit(messageJson, ['_raw']))
         } catch {
-            console.log("Invalid Message: %s", message.content)
+            console.log("Invalid message %s", message.content)
         }
-
     } else {
-        console.log("Missing message")
+        console.log("No content")
     }
-
 }
 
-amqp.connect(`amqp://${config.amqp.host}`, (error0, connection) => {
+amqp.connect('amqp://localhost', function(error0, connection) {
     if (error0) {
         throw error0;
     }
-    connection.createChannel((error1, channel) => {
+    connection.createChannel(function(error1, channel) {
         if (error1) {
             throw error1;
         }
 
-        channel.assertQueue(config.amqp.queue, {
+        var queue = 'main_queue';
+
+        channel.assertQueue(queue, {
             durable: false
         });
 
+        console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
 
-        console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", config.amqp.queue);
-
-        channel.consume(config.amqp.queue, processEvent, {
+        channel.consume(queue, handleMessage, {
             noAck: true
         });
     });

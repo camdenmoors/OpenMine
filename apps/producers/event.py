@@ -11,7 +11,6 @@ def from_none(x: Any) -> Any:
     assert x is None
     return x
 
-
 def from_union(fs, x):
     for f in fs:
         try:
@@ -20,16 +19,13 @@ def from_union(fs, x):
             pass
     assert False
 
-
 def from_float(x: Any) -> float:
     assert isinstance(x, (float, int)) and not isinstance(x, bool)
     return float(x)
 
-
 def from_list(f: Callable[[Any], T], x: Any) -> List[T]:
     assert isinstance(x, list)
     return [f(y) for y in x]
-
 
 def to_float(x: Any) -> float:
     assert isinstance(x, float)
@@ -37,7 +33,7 @@ def to_float(x: Any) -> float:
 
 class Event:
     """Meta: Raw payload of the generated event"""
-    raw: str
+    _raw: str
     """UGC: Event content text"""
     content: Optional[str]
     """Meta: UNIX Timestamp of when the event was created (i.e when a message was sent)"""
@@ -76,8 +72,8 @@ class Event:
     """UGC: Creator username"""
     username: Optional[str]
 
-    def __init__(self, raw: str, content: Optional[str], created_at: Optional[float], hostname: Optional[str], ip: Optional[str], originating_id: Optional[str], parse_time: Optional[float], path: str, producer: str, relationships: Optional[List[str]], statistics_followers: Optional[float], statistics_interactions: Optional[float], statistics_negative: Optional[float], statistics_positive: Optional[float], statistics_republish: Optional[float], statistics_views: Optional[float], tags: Optional[List[str]], type: str, user_id: Optional[str], username: Optional[str]) -> None:
-        self.raw = raw
+    def __init__(self, raw: str, type: str = None, path: str = None, content: Optional[str] = None, created_at: Optional[float] = None, hostname: Optional[str] = None, ip: Optional[str] = None, originating_id: Optional[str] = None, parse_time: Optional[float] = None,  producer: str = None, relationships: Optional[List[str]] = None, statistics_followers: Optional[float] = None, statistics_interactions: Optional[float] = None, statistics_negative: Optional[float] = None, statistics_positive: Optional[float] = None, statistics_republish: Optional[float] = None, statistics_views: Optional[float] = None, tags: Optional[List[str]] = None, user_id: Optional[str] = None, username: Optional[str] = None) -> None:
+        self._raw = raw
         self.content = content
         self.hostname = hostname
         self.ip = ip
@@ -85,7 +81,7 @@ class Event:
         if (parse_time):
             self.parse_time = parse_time
         else:
-            self.parse_time = int(time.now())
+            self.parse_time = int(time.time())
         self.path = path
         self.producer = producer
         self.relationships = relationships
@@ -105,25 +101,4 @@ class Event:
         self.type = type
 
     def to_dict(self) -> dict:
-        result: dict = {}
-        result["_raw"] = from_str(self.raw)
-        result["content"] = from_union([from_str, from_none], self.content)
-        result["created_at"] = from_union([to_float, from_none], self.created_at)
-        result["hostname"] = from_union([from_str, from_none], self.hostname)
-        result["ip"] = from_union([from_str, from_none], self.ip)
-        result["originating_id"] = from_union([from_str, from_none], self.originating_id)
-        result["parse_time"] = from_union([to_float, from_none], self.parse_time)
-        result["path"] = from_str(self.path)
-        result["producer"] = from_str(self.producer)
-        result["relationships"] = from_union([lambda x: from_list(from_str, x), from_none], self.relationships)
-        result["statistics.followers"] = from_union([to_float, from_none], self.statistics_followers)
-        result["statistics.interactions"] = from_union([to_float, from_none], self.statistics_interactions)
-        result["statistics.negative"] = from_union([to_float, from_none], self.statistics_negative)
-        result["statistics.positive"] = from_union([to_float, from_none], self.statistics_positive)
-        result["statistics.republish"] = from_union([to_float, from_none], self.statistics_republish)
-        result["statistics.views"] = from_union([to_float, from_none], self.statistics_views)
-        result["tags"] = from_union([lambda x: from_list(from_str, x), from_none], self.tags)
-        result["type"] = from_str(self.type)
-        result["user_id"] = from_union([from_str, from_none], self.user_id)
-        result["username"] = from_union([from_str, from_none], self.username)
-        return result
+        return  {k: v for k, v in self.__dict__.items() if type(v) is not None}
